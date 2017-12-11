@@ -36,7 +36,10 @@ def forward_propagation(X, parameters):
     # Retrieve the parameters from the dictionary "parameters"
     W1 = parameters['W1']
     W2 = parameters['W2']
+    W3 = parameters['W3']
+    W4 = parameters['W4']
 
+# 1
     # CONV2D: stride of 1, padding 'SAME'
     s = 1
     Z1 = tf.nn.conv2d(X, W1, strides=[1, s, s, 1], padding='SAME')
@@ -45,6 +48,8 @@ def forward_propagation(X, parameters):
     # MAXPOOL: window 8x8, sride 8, padding 'SAME'
     f, s = 8, 8
     P1 = tf.nn.max_pool(A1, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+
+# 2
     # CONV2D: filters W2, stride 1, padding 'SAME'
     s = 1
     Z2 = tf.nn.conv2d(P1, W2, strides=[1, s, s, 1], padding='SAME')
@@ -53,21 +58,43 @@ def forward_propagation(X, parameters):
     # MAXPOOL: window 4x4, stride 4, padding 'SAME'
     f, s = 4, 4
     P2 = tf.nn.max_pool(A2, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+
+# 3
+    # CONV2D: filters W2, stride 1, padding 'SAME'
+    s = 1
+    Z3 = tf.nn.conv2d(P2, W3, strides=[1, s, s, 1], padding='SAME')
+    # RELU
+    A3 = tf.nn.relu(Z3)
+    # MAXPOOL: window 4x4, stride 4, padding 'SAME'
+    f, s = 4, 4
+    P3 = tf.nn.max_pool(A3, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+
+# 4
+    # CONV2D: filters W2, stride 1, padding 'SAME'
+    s = 1
+    Z4 = tf.nn.conv2d(P3, W4, strides=[1, s, s, 1], padding='SAME')
+    # RELU
+    A4 = tf.nn.relu(Z4)
+    # MAXPOOL: window 4x4, stride 4, padding 'SAME'
+    f, s = 4, 4
+    P4 = tf.nn.max_pool(A4, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+
+
     # FLATTEN
-    P2 = tf.contrib.layers.flatten(P2)
+    P4 = tf.contrib.layers.flatten(P4)
     # FULLY-CONNECTED without non-linear activation function (not not call softmax).
     # 6 neurons in output layer. Hint: one of the arguments should be "activation_fn=None"
     num_outputs = 4
-    Z3 = tf.contrib.layers.fully_connected(P2, num_outputs, activation_fn=None)
+    Z5 = tf.contrib.layers.fully_connected(P4, num_outputs, activation_fn=None)
 
-    return Z3
+    return Z5
 
 
 #   #########################################################################
 
 
 def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
-                 num_epochs=100, minibatch_size=64, print_cost=True):
+                 num_epochs=100, minibatch_size=64, print_cost=True, restore=None):
     """
     Implements a three-layer ConvNet in Tensorflow:
     CONV2D -> RELU -> MAXPOOL -> CONV2D -> RELU -> MAXPOOL -> FLATTEN -> FULLYCONNECTED
@@ -81,6 +108,7 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
     num_epochs -- number of epochs of the optimization loop
     minibatch_size -- size of a minibatch
     print_cost -- True to print the cost every 100 epochs
+    restore -- File path to restore variables from previous session
 
     Returns:
     train_accuracy -- real number, accuracy on the train set (X_train)
@@ -100,11 +128,15 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
     Y = tf.placeholder(tf.float32, [None, n_y])
 
     # Initialize parameters
-    W1 = tf.get_variable("W1", [4, 4, 1, 8], initializer=tf.contrib.layers.xavier_initializer())
-    W2 = tf.get_variable("W2", [2, 2, 8, 16], initializer=tf.contrib.layers.xavier_initializer())
+    W1 = tf.get_variable("W1", [3, 3, 1, 16], initializer=tf.contrib.layers.xavier_initializer())
+    W2 = tf.get_variable("W2", [5, 5, 16, 32], initializer=tf.contrib.layers.xavier_initializer())
+    W3 = tf.get_variable("W3", [3, 3, 32, 64], initializer=tf.contrib.layers.xavier_initializer())
+    W4 = tf.get_variable("W4", [5, 5, 64, 128], initializer=tf.contrib.layers.xavier_initializer())
 
     parameters = {"W1": W1,
-                  "W2": W2}
+                  "W2": W2,
+                  "W3": W3,
+                  "W4": W4}
 
     # Forward propagation: Build the forward propagation in the tensorflow graph
     Z3 = forward_propagation(X, parameters)
@@ -118,14 +150,24 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
     # Initialize all the variables globally
     init = tf.global_variables_initializer()
 
+    # Allow saving
+    saver = tf.train.Saver()
+
     # Start the session to compute the tensorflow graph
     print('Starting TensorFlow session...')
     with tf.Session() as sess:
 
-        # Run the initialization
-        sess.run(init)
+        if restore is None:
+            # Run the initialization
+            print("Initializing parameters...")
+            sess.run(init)
+        else:
+            # Restore variables from disk
+            print("Restoring parameters...")
+            saver.restore(sess, restore)
 
         # Do the training loop
+        print("\n --- TRAINING --- ")
         for epoch in range(num_epochs):
 
             minibatch_cost = 0.
@@ -137,7 +179,7 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
                 # Select a minibatch
                 (minibatch_X, minibatch_Y) = minibatch
                 # IMPORTANT: The line that runs the graph on a minibatch.
-                # Run the session to execute the optimizer and the cost, the feedict should contain a minibatch for (X,Y).
+                # Run the session to execute the optimizer and the cost. feedict should contain a minibatch for (X,Y).
                 _, temp_cost = sess.run([optimizer, cost], {X: minibatch_X, Y: minibatch_Y})
 
                 minibatch_cost += temp_cost / num_minibatches
@@ -147,6 +189,12 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
                 print("Cost after epoch %i: %f" % (epoch, minibatch_cost))
             if print_cost == True and epoch % 1 == 0:
                 costs.append(minibatch_cost)
+
+        print('\nFINAL COST after %i epochs: ' % num_epochs, costs[-1])
+
+        # Save the variables to disk.
+        save_path = saver.save(sess, "./tmp/model.ckpt")
+        print("Model saved in file: %s" % save_path)
 
         # plot the cost
         plt.plot(np.squeeze(costs))
@@ -161,11 +209,12 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
 
         # Calculate accuracy on the test set
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-        print(accuracy)
+        # print(accuracy)
         train_accuracy = accuracy.eval({X: X_train, Y: Y_train})
         test_accuracy = accuracy.eval({X: X_test, Y: Y_test})
         print("Train Accuracy:", train_accuracy)
         print("Test Accuracy:", test_accuracy)
+        print("  --- DONE ---  \n")
 
         return train_accuracy, test_accuracy, parameters
 
@@ -175,53 +224,4 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
 #   TEST
 
 #   #   #########################################################################
-print('  --- START ---  ')
-
-# Load data
-trstep = 5
-
-train_lists = {'gla': np.arange(1, 72, trstep),
-               'epi': np.arange(175, 270, trstep),
-               'pap': np.arange(310, 390, trstep),
-               'der': np.arange(400, 700, trstep)}
-
-# print(train_lists['gla'].shape)
-# print(train_lists['epi'].shape)
-# print(train_lists['pap'].shape)
-# print(train_lists['der'].shape)
-# input('Wait...')
-
-label_lists = {'gla': np.array([[1, 0, 0, 0]]),
-               'epi': np.array([[0, 1, 0, 0]]),
-               'pap': np.array([[0, 0, 1, 0]]),
-               'der': np.array([[0, 0, 0, 1]])}
-
-
-X_train = np.empty((0, 240, 240, 1))
-Y_train = np.empty((0, 4))
-print(X_train.shape)
-print(Y_train.shape)
-for label in train_lists.keys():
-    files = []
-    for elem in train_lists[label]:
-        fold = '/home/manuel/PycharmProjects/SimpleNet/data/'
-        name = 'sm_Bicubic'
-        numb = str(elem).zfill(4)
-        exte = '.tif'
-        file = fold + name + numb + exte
-        files.append(np.array(Image.open(file)).reshape(240, 240, 1))
-    X_train = np.vstack((X_train, np.array(files)))
-    Y_train = np.vstack((Y_train, np.repeat(label_lists[label], train_lists[label].shape[0], 0)))
-
-print('%i examples loaded' % X_train.shape[0])
-print('X: ', X_train.shape)
-print('Y: ', Y_train.shape)
-X_test = X_train
-Y_test = Y_train
-
-input('wait...')
-
-print('\nStarting the training')
-_, _, parameters = simple_model(X_train, Y_train, X_test, Y_test)
-
 

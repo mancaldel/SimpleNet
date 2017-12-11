@@ -97,7 +97,7 @@ def forward_propagation_for_predict(X, parameters):
     W2 = parameters['W2']
     b2 = parameters['b2']
     W3 = parameters['W3']
-    b3 = parameters['b3'] 
+    b3 = parameters['b3']
                                                            # Numpy Equivalents:
     Z1 = tf.add(tf.matmul(W1, X), b1)                      # Z1 = np.dot(W1, X) + b1
     A1 = tf.nn.relu(Z1)                                    # A1 = relu(Z1)

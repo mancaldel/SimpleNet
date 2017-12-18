@@ -94,7 +94,7 @@ def forward_propagation(X, parameters):
 
 
 def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
-                 num_epochs=100, minibatch_size=64, print_cost=True, restore=None):
+                 num_epochs=100, minibatch_size=64, print_cost=True, restore_file=None):
     """
     Implements a three-layer ConvNet in Tensorflow:
     CONV2D -> RELU -> MAXPOOL -> CONV2D -> RELU -> MAXPOOL -> FLATTEN -> FULLYCONNECTED
@@ -157,14 +157,14 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
     print('Starting TensorFlow session...')
     with tf.Session() as sess:
 
-        if restore is None:
+        if restore_file is None:
             # Run the initialization
             print("Initializing parameters...")
             sess.run(init)
         else:
             # Restore variables from disk
             print("Restoring parameters...")
-            saver.restore(sess, restore)
+            saver.restore(sess, restore_file)
 
         # Do the training loop
         print("\n --- TRAINING --- ")
@@ -193,6 +193,8 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
         print('\nFINAL COST after %i epochs: ' % num_epochs, costs[-1])
 
         # Save the variables to disk.
+        # saver = tf.train.Saver(var_list=None)
+        # saver.save(sess, file)
         save_path = saver.save(sess, "./tmp/model.ckpt")
         print("Model saved in file: %s" % save_path)
 

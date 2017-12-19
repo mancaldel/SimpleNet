@@ -1,0 +1,36 @@
+####    FILES   ###############################
+
+Convolution model - Application - v1-100.ipynb
+Convolution_model_Application_v1_100.py
+
+
+####    FOLDERS   #############################
+
+ckpt/
+data/
+__pycache__/
+SAVE*/
+saver*/
+tmp/
+
+
+####    OTHERS  ###############################
+
+# IPython Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# dotenv
+.env
+
+# virtualenv
+venv/
+ENV/
+
+# Spyder project settings
+.spyderproject
+
+# PyCharm
+.idea/

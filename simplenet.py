@@ -2,6 +2,8 @@
 Lets try to make a simple network
 """
 
+import datetime, os, sys
+
 import math
 import numpy as np
 import matplotlib.pyplot as plt
@@ -139,10 +141,10 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
                   "W4": W4}
 
     # Forward propagation: Build the forward propagation in the tensorflow graph
-    Z3 = forward_propagation(X, parameters)
+    Z5 = forward_propagation(X, parameters)
 
     # Cost function: Add cost function to tensorflow graph
-    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=Z3, labels=Y))
+    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=Z5, labels=Y))
 
     # Backpropagation: Define the tensorflow optimizer. Use an AdamOptimizer that minimizes the cost.
     optimizer = tf.train.AdamOptimizer(learning_rate).minimize(cost)
@@ -151,7 +153,8 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
     init = tf.global_variables_initializer()
 
     # Allow saving
-    saver = tf.train.Saver()
+    saver = tf.train.Saver(max_to_keep=5,
+                           keep_checkpoint_every_n_hours=10000.0)
 
     # Start the session to compute the tensorflow graph
     print('Starting TensorFlow session...')
@@ -165,6 +168,14 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
             # Restore variables from disk
             print("Restoring parameters...")
             saver.restore(sess, restore_file)
+
+        # Define saving folder
+        folder_name = 'saver_' \
+                      + str(datetime.datetime.now().strftime("%y%m%d_%H%M")) \
+                      + '_lr' + str(learning_rate) \
+                      + '_ep' + str(num_epochs) \
+                      + '_mb' + str(minibatch_size)
+        print("Progress will be saved under ./%s/" % folder_name)
 
         # Do the training loop
         print("\n --- TRAINING --- ")
@@ -190,13 +201,14 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
             if print_cost == True and epoch % 1 == 0:
                 costs.append(minibatch_cost)
 
-        print('\nFINAL COST after %i epochs: ' % num_epochs, costs[-1])
+            # Save the variables to disk every epoch.
+            file_name = "epoch" #+ str(epoch).zfill(4) #+ ".ckpt"
+            save_path = saver.save(sess, folder_name + '/' + file_name, global_step=epoch)
+            # saver = tf.train.Saver(var_list=None)
+            # saver.save(sess, file)
+            print("Epoch " + str(epoch) + " saved in file: %s" % save_path)
 
-        # Save the variables to disk.
-        # saver = tf.train.Saver(var_list=None)
-        # saver.save(sess, file)
-        save_path = saver.save(sess, "./tmp/model.ckpt")
-        print("Model saved in file: %s" % save_path)
+        print('\nFINAL COST after %i epochs: ' % num_epochs, costs[-1])
 
         # plot the cost
         plt.plot(np.squeeze(costs))
@@ -206,7 +218,7 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
         plt.show()
 
         # Calculate the correct predictions
-        predict_op = tf.argmax(Z3, 1)
+        predict_op = tf.argmax(Z5, 1)
         correct_prediction = tf.equal(predict_op, tf.argmax(Y, 1))
 
         # Calculate accuracy on the test set

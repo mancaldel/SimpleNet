@@ -149,6 +149,10 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
     # Backpropagation: Define the tensorflow optimizer. Use an AdamOptimizer that minimizes the cost.
     optimizer = tf.train.AdamOptimizer(learning_rate).minimize(cost)
 
+    # Accuracy
+    acc = tf.equal(tf.argmax(Z5, 1), tf.argmax(Y, 1))
+    acc = tf.reduce_mean(tf.cast(acc, tf.float32))
+
     # Initialize all the variables globally
     init = tf.global_variables_initializer()
 
@@ -177,6 +181,17 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
                       + '_mb' + str(minibatch_size)
         print("Progress will be saved under ./%s/" % folder_name)
 
+        # Tensorboard
+        logs_path = './tmp/tf_logs/'
+        # Create a summary to monitor cost tensor
+        tf.summary.scalar("loss", cost)
+        # Create a summary to monitor accuracy tensor
+        tf.summary.scalar("accuracy", acc)
+        # Merge all summaries into a single op
+        merged_summary_op = tf.summary.merge_all()
+        # op to write logs to Tensorboard
+        summary_writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
+
         # Do the training loop
         print("\n --- TRAINING --- ")
         for epoch in range(num_epochs):
@@ -185,15 +200,22 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
             num_minibatches = int(m / minibatch_size)  # number of minibatches of size minibatch_size in the train set
             seed = seed + 1
             minibatches = random_mini_batches(X_train, Y_train, minibatch_size, seed)
-
+            mb = 0
             for minibatch in minibatches:
                 # Select a minibatch
                 (minibatch_X, minibatch_Y) = minibatch
                 # IMPORTANT: The line that runs the graph on a minibatch.
                 # Run the session to execute the optimizer and the cost. feedict should contain a minibatch for (X,Y).
-                _, temp_cost = sess.run([optimizer, cost], {X: minibatch_X, Y: minibatch_Y})
+                # + Run optimization op (backprop), cost op (loss) and summary nodes
+                _, temp_cost, summary = sess.run([optimizer, cost, merged_summary_op],
+                                                 {X: minibatch_X, Y: minibatch_Y})
 
+                # Compute average loss
                 minibatch_cost += temp_cost / num_minibatches
+
+                # Write logs at every iteration
+                summary_writer.add_summary(summary, epoch * len(minibatches) + mb)
+                mb += 1
 
             # Print the cost every epoch
             if print_cost == True and epoch % 5 == 0:

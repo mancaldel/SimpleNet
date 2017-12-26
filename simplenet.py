@@ -48,7 +48,7 @@ def forward_propagation(X, parameters):
     # RELU
     A1 = tf.nn.relu(Z1)
     # MAXPOOL: window 8x8, sride 8, padding 'SAME'
-    f, s = 8, 8
+    f, s = 4, 4
     P1 = tf.nn.max_pool(A1, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
 
 # 2
@@ -68,7 +68,7 @@ def forward_propagation(X, parameters):
     # RELU
     A3 = tf.nn.relu(Z3)
     # MAXPOOL: window 4x4, stride 4, padding 'SAME'
-    f, s = 4, 4
+    f, s = 2, 2
     P3 = tf.nn.max_pool(A3, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
 
 # 4
@@ -78,7 +78,7 @@ def forward_propagation(X, parameters):
     # RELU
     A4 = tf.nn.relu(Z4)
     # MAXPOOL: window 4x4, stride 4, padding 'SAME'
-    f, s = 4, 4
+    f, s = 2, 2
     P4 = tf.nn.max_pool(A4, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
 
 

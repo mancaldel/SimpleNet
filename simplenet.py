@@ -158,7 +158,7 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
 
     # Allow saving
     saver = tf.train.Saver(max_to_keep=5,
-                           keep_checkpoint_every_n_hours=10000.0)
+                           keep_checkpoint_every_n_hours=.25)
 
     # Start the session to compute the tensorflow graph
     print('Starting TensorFlow session...')
@@ -228,7 +228,7 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
             save_path = saver.save(sess, folder_name + '/' + file_name, global_step=epoch)
             # saver = tf.train.Saver(var_list=None)
             # saver.save(sess, file)
-            print("Epoch " + str(epoch) + " saved in file: %s" % save_path)
+            # print("Epoch " + str(epoch) + " saved in file: %s" % save_path)
 
         print('\nFINAL COST after %i epochs: ' % num_epochs, costs[-1])
 

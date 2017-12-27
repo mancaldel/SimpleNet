@@ -174,15 +174,14 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
             saver.restore(sess, restore_file)
 
         # Define saving folder
-        folder_name = 'saver_' \
-                      + str(datetime.datetime.now().strftime("%y%m%d_%H%M")) \
+        folder_name = str(datetime.datetime.now().strftime("%y%m%d_%H%M")) \
                       + '_lr' + str(learning_rate) \
                       + '_ep' + str(num_epochs) \
                       + '_mb' + str(minibatch_size)
-        print("Progress will be saved under ./%s/" % folder_name)
+        print("Progress will be saved under ./saver/%s/" % folder_name)
 
         # Tensorboard
-        logs_path = './tmp/tf_logs/'
+        logs_path = './saver/tf_events/'
         # Create a summary to monitor cost tensor
         tf.summary.scalar("loss", cost)
         # Create a summary to monitor accuracy tensor
@@ -225,7 +224,7 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
 
             # Save the variables to disk every epoch.
             file_name = "epoch" #+ str(epoch).zfill(4) #+ ".ckpt"
-            save_path = saver.save(sess, folder_name + '/' + file_name, global_step=epoch)
+            save_path = saver.save(sess, 'saver/' + folder_name + '/' + file_name, global_step=epoch)
             # saver = tf.train.Saver(var_list=None)
             # saver.save(sess, file)
             # print("Epoch " + str(epoch) + " saved in file: %s" % save_path)

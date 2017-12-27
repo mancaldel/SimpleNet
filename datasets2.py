@@ -1,8 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from PIL import Image
-import skimage.io as io
+# import skimage.io as io
 
 
 #   #########################################################################
@@ -127,8 +127,8 @@ dataset = {'epidermis': dict_epidermis,
            'dermis': dict_dermis}
 
 
-labels = {'epidermis': np.array([[0, 1, 0, 0]]),
-          'dermis': np.array([[0, 0, 0, 1]])}
+labels = {'epidermis': np.array([[1, 0]]),
+          'dermis': np.array([[0, 1]])}
 
 
 #   #########################################################################
@@ -188,7 +188,7 @@ def load_data(data_set, labels):
     nnn = 0
 
     for label in data_set.keys():
-        print("Loading '%s' (%i folders)" % (label, len(data_set[label])))
+        print("Loading '%s' (%i folders)..." % (label, len(data_set[label])))
         prev_ex = X_train.shape[0]
 
         for folder in data_set[label].keys():
@@ -202,6 +202,7 @@ def load_data(data_set, labels):
                 Y_train = np.vstack((Y_train, labels[label]))
                 # img_array.append(np.array(img))
                 # print(img_array)
+                img.close()
 
         new_ex = X_train.shape[0] - prev_ex
         print("    --->  %i examples loaded" % new_ex)
@@ -214,94 +215,104 @@ def load_data(data_set, labels):
 #   #########################################################################
 
 
-def evaluate_data_manually():
-    show_random = np.random.randint(0, X_train.shape[0], 20)
-
-    for i in show_random:
-        plt.imshow(X_train[i, :][:, :, 0])
-        plt.title(Y_train[i])
-        print('Showing data %i' % i)
-        plt.show()
-
-
-#   #########################################################################
-
-
-# path_to_data = './data/dict_data.npy'
+# def evaluate_data_manually():
+#     show_random = np.random.randint(0, X_train.shape[0], 20)
 #
-#
-# print("Cleaning data...")
-# cleaned_data = clean_data(dataset)
-# print("")
-#
-#
-# print("Saving cleaned data...")
-# save_data(cleaned_data, path_to_data)
-# print("")
-#
-#
-# print("Loading data...")
-# X_train, Y_train = load_data(cleaned_data, labels)
-# print("    X: ", X_train.shape)
-# print("    Y: ", Y_train.shape)
-# print("")
-#
-#
-# print(" --- EVALUATE DATA --- ")
-# evaluate_data_manually()
-# print("")
-#
-#
-# print("Saving data...")
-# np.save('data/Xdata', X_train)
-# np.save('data/Ydata', Y_train)
-# print("")
+#     for i in show_random:
+#         plt.imshow(X_train[i, :][:, :, 0])
+#         plt.title(Y_train[i])
+#         print('Showing data %i' % i)
+#         plt.show()
 
 
 #   #########################################################################
 
 
-# print(" --- LOAD DATA --- ")
-# Xdata = np.load('./data/Xdata.npy')
-# Ydata = np.load('./data/Ydata.npy')
-# print("")
-#
-#
-# print("Randomize data...")
-# pp = np.random.permutation(Xdata.shape[0])
-# Xdata_random = Xdata[pp, :, :, :]
-# Ydata_random = Ydata[pp, :]
-# print("")
-#
-#
-# print(" --- DEFINE SETS --- ")
-# X_train = Xdata_random[0:600, :, :, :]
-# Y_train = Ydata_random[0:600, :]
-#
-# X_dev = Xdata_random[600:800, :, :, :]
-# Y_dev = Ydata_random[600:800, :]
-#
-# X_test = Xdata_random[800:, :, :, :]
-# Y_test = Ydata_random[800:, :]
-# print("")
-#
-#
+path_to_data = './data2/dict_data2.npy'
+
+
+print("Cleaning data...")
+cleaned_data = clean_data(dataset)
+print("    (done)\n")
+
+
+print("Saving cleaned data...")
+save_data(cleaned_data, path_to_data)
+print("    (done)\n")
+
+
+print("Loading data...")
+X_train, Y_train = load_data(cleaned_data, labels)
+print("    X: ", X_train.shape)
+print("    Y: ", Y_train.shape)
+print("    (done)\n")
+
+
 # print(" --- EVALUATE DATA --- ")
 # evaluate_data_manually()
 # print("")
-#
-#
-# print("Saving data...")
-# np.save('data/X_train', X_train)
-# np.save('data/Y_train', Y_train)
-#
-# np.save('data/X_dev', X_dev)
-# np.save('data/Y_dev', Y_dev)
-#
-# np.save('data/X_test', X_test)
-# np.save('data/Y_test', Y_test)
+
+
+print("Saving data...")
+np.save('data2/Xdata2', X_train)
+np.save('data2/Ydata2', Y_train)
+print("    (done)\n")
+
+
+#   #########################################################################
+
+
+print(" --- LOAD DATA --- ")
+Xdata = np.load('./data2/Xdata2.npy')
+Ydata = np.load('./data2/Ydata2.npy')
+print("    (done)\n")
+
+
+print("Randomize data...")
+pp = np.random.permutation(Xdata.shape[0])
+Xdata_random = Xdata[pp, :, :, :]
+Ydata_random = Ydata[pp, :]
+print("    (done)\n")
+
+
+print(" --- DEFINE SETS --- ")
+X_train = Xdata_random[0:500, :, :, :]
+Y_train = Ydata_random[0:500, :]
+
+X_dev = Xdata_random[500:650, :, :, :]
+Y_dev = Ydata_random[500:650, :]
+
+X_test = Xdata_random[650:, :, :, :]
+Y_test = Ydata_random[650:, :]
+print("    (done)\n")
+
+
+# print(" --- EVALUATE DATA --- ")
+# evaluate_data_manually()
 # print("")
 
 
+print("Saving data...")
+np.save('data2/X_train2', X_train)
+np.save('data2/Y_train2', Y_train)
+print("%i images saved for training." % X_train.shape[0])
+print("    Epidermis: ", np.bincount(Y_train[:, 0].astype(np.int))[1])
+print("    Dermis: ", np.bincount(Y_train[:, 0].astype(np.int))[0])
+
+np.save('data2/X_dev2', X_dev)
+np.save('data2/Y_dev2', Y_dev)
+print("%i images saved for developing." % X_dev.shape[0])
+print("    Epidermis: ", np.bincount(Y_dev[:, 0].astype(np.int))[1])
+print("    Dermis: ", np.bincount(Y_dev[:, 0].astype(np.int))[0])
+
+np.save('data2/X_test2', X_test)
+np.save('data2/Y_test2', Y_test)
+print("%i images saved for testing." % X_test.shape[0])
+print("    Epidermis: ", np.bincount(Y_test[:, 0].astype(np.int))[1])
+print("    Dermis: ", np.bincount(Y_test[:, 0].astype(np.int))[0])
+
+print("    (done)\n")
+
+print("\n --- END ---")
 
 

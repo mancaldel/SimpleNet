@@ -21,7 +21,7 @@ from cnn_utils import *
 #   #########################################################################
 
 
-def forward_propagation(X, parameters):
+def forward_propagation(X, parameters, output_num=2):
     """
     Implements the forward propagation for the model:
     CONV2D -> RELU -> MAXPOOL -> CONV2D -> RELU -> MAXPOOL -> FLATTEN -> FULLYCONNECTED
@@ -86,7 +86,7 @@ def forward_propagation(X, parameters):
     P4 = tf.contrib.layers.flatten(P4)
     # FULLY-CONNECTED without non-linear activation function (not not call softmax).
     # 6 neurons in output layer. Hint: one of the arguments should be "activation_fn=None"
-    num_outputs = 4
+    num_outputs = output_num
     Z5 = tf.contrib.layers.fully_connected(P4, num_outputs, activation_fn=None)
 
     return Z5

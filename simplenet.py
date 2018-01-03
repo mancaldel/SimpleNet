@@ -205,6 +205,7 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
             seed = seed + 1
             minibatches = random_mini_batches(X_train, Y_train, minibatch_size, seed)
             mb = 0
+            firstmini = True
             for minibatch in minibatches:
                 # Select a minibatch
                 (minibatch_X, minibatch_Y) = minibatch
@@ -218,8 +219,12 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
                 minibatch_cost += temp_cost / num_minibatches
 
                 # Write logs at every iteration
-                summary_writer.add_summary(summary, epoch * len(minibatches) + mb)
-                mb += 1
+                if firstmini is True:
+                    summary_writer.add_summary(summary, epoch)# * len(minibatches) + mb)
+                    # mb += 1
+                else:
+                    firstmini = False
+
 
             # Print the cost every epoch
             if print_cost == True and epoch % 5 == 0:

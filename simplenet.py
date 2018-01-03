@@ -43,51 +43,56 @@ def forward_propagation(X, parameters, output_num=2):
 
 # 1
     # CONV2D: stride of 1, padding 'SAME'
-    s = 1
-    Z1 = tf.nn.conv2d(X, W1, strides=[1, s, s, 1], padding='SAME')
-    # RELU
-    A1 = tf.nn.relu(Z1)
-    # MAXPOOL: window 8x8, sride 8, padding 'SAME'
-    f, s = 4, 4
-    P1 = tf.nn.max_pool(A1, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+    with tf.name_scope("Block1"):
+        s = 1
+        Z1 = tf.nn.conv2d(X, W1, strides=[1, s, s, 1], padding='SAME')
+        # RELU
+        A1 = tf.nn.relu(Z1)
+        # MAXPOOL: window 8x8, sride 8, padding 'SAME'
+        f, s = 4, 4
+        P1 = tf.nn.max_pool(A1, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
 
 # 2
     # CONV2D: filters W2, stride 1, padding 'SAME'
-    s = 1
-    Z2 = tf.nn.conv2d(P1, W2, strides=[1, s, s, 1], padding='SAME')
-    # RELU
-    A2 = tf.nn.relu(Z2)
-    # MAXPOOL: window 4x4, stride 4, padding 'SAME'
-    f, s = 4, 4
-    P2 = tf.nn.max_pool(A2, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+    with tf.name_scope("Block2"):
+        s = 1
+        Z2 = tf.nn.conv2d(P1, W2, strides=[1, s, s, 1], padding='SAME')
+        # RELU
+        A2 = tf.nn.relu(Z2)
+        # MAXPOOL: window 4x4, stride 4, padding 'SAME'
+        f, s = 4, 4
+        P2 = tf.nn.max_pool(A2, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
 
 # 3
     # CONV2D: filters W2, stride 1, padding 'SAME'
-    s = 1
-    Z3 = tf.nn.conv2d(P2, W3, strides=[1, s, s, 1], padding='SAME')
-    # RELU
-    A3 = tf.nn.relu(Z3)
-    # MAXPOOL: window 4x4, stride 4, padding 'SAME'
-    f, s = 2, 2
-    P3 = tf.nn.max_pool(A3, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+    with tf.name_scope("Block3"):
+        s = 1
+        Z3 = tf.nn.conv2d(P2, W3, strides=[1, s, s, 1], padding='SAME')
+        # RELU
+        A3 = tf.nn.relu(Z3)
+        # MAXPOOL: window 4x4, stride 4, padding 'SAME'
+        f, s = 2, 2
+        P3 = tf.nn.max_pool(A3, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
 
 # 4
     # CONV2D: filters W2, stride 1, padding 'SAME'
-    s = 1
-    Z4 = tf.nn.conv2d(P3, W4, strides=[1, s, s, 1], padding='SAME')
-    # RELU
-    A4 = tf.nn.relu(Z4)
-    # MAXPOOL: window 4x4, stride 4, padding 'SAME'
-    f, s = 2, 2
-    P4 = tf.nn.max_pool(A4, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+    with tf.name_scope("Block4"):
+        s = 1
+        Z4 = tf.nn.conv2d(P3, W4, strides=[1, s, s, 1], padding='SAME')
+        # RELU
+        A4 = tf.nn.relu(Z4)
+        # MAXPOOL: window 4x4, stride 4, padding 'SAME'
+        f, s = 2, 2
+        P4 = tf.nn.max_pool(A4, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
 
 
     # FLATTEN
-    P4 = tf.contrib.layers.flatten(P4)
-    # FULLY-CONNECTED without non-linear activation function (not not call softmax).
-    # 6 neurons in output layer. Hint: one of the arguments should be "activation_fn=None"
-    num_outputs = output_num
-    Z5 = tf.contrib.layers.fully_connected(P4, num_outputs, activation_fn=None)
+    with tf.name_scope("Output"):
+        F1 = tf.contrib.layers.flatten(P4)
+        # FULLY-CONNECTED without non-linear activation function (not not call softmax).
+        # 6 neurons in output layer. Hint: one of the arguments should be "activation_fn=None"
+        num_outputs = output_num
+        Z5 = tf.contrib.layers.fully_connected(F1, num_outputs, activation_fn=None)
 
     return Z5
 

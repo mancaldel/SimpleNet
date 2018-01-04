@@ -261,6 +261,23 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
         print("Test Accuracy:", test_accuracy)
         print("  --- DONE ---  \n")
 
+        print('These the variables used in the network:')
+        print("GLOBAL:")
+        for i in tf.global_variables():
+            print(i)
+        print("TRAINABLE:")
+        for i in tf.trainable_variables():
+            print(i)
+        print("LOCAL:")
+        for i in tf.local_variables():
+            print(i)
+        print("MODEL:")
+        for i in tf.model_variables():
+            print(i)
+
+        # Close the method to save the operations for TensorBoard
+        summary_writer.close()
+
         return train_accuracy, test_accuracy, parameters
 
 

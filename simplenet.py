@@ -135,10 +135,11 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
     Y = tf.placeholder(tf.float32, [None, n_y])
 
     # Initialize parameters
-    W1 = tf.get_variable("W1", [3, 3, 1, 16], initializer=tf.contrib.layers.xavier_initializer())
-    W2 = tf.get_variable("W2", [5, 5, 16, 32], initializer=tf.contrib.layers.xavier_initializer())
-    W3 = tf.get_variable("W3", [3, 3, 32, 64], initializer=tf.contrib.layers.xavier_initializer())
-    W4 = tf.get_variable("W4", [5, 5, 64, 128], initializer=tf.contrib.layers.xavier_initializer())
+    with tf.variable_scope("conv_weights"):
+        W1 = tf.get_variable("W1", [3, 3, 1, 16], initializer=tf.contrib.layers.xavier_initializer())
+        W2 = tf.get_variable("W2", [5, 5, 16, 32], initializer=tf.contrib.layers.xavier_initializer())
+        W3 = tf.get_variable("W3", [3, 3, 32, 64], initializer=tf.contrib.layers.xavier_initializer())
+        W4 = tf.get_variable("W4", [5, 5, 64, 128], initializer=tf.contrib.layers.xavier_initializer())
 
     parameters = {"W1": W1,
                   "W2": W2,

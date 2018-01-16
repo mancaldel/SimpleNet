@@ -21,7 +21,7 @@ from cnn_utils import *
 #   #########################################################################
 
 
-def forward_propagation(X, parameters):
+def forward_propagation(X, parameters, output_num=2):
     """
     Implements the forward propagation for the model:
     CONV2D -> RELU -> MAXPOOL -> CONV2D -> RELU -> MAXPOOL -> FLATTEN -> FULLYCONNECTED
@@ -43,51 +43,76 @@ def forward_propagation(X, parameters):
 
 # 1
     # CONV2D: stride of 1, padding 'SAME'
-    s = 1
-    Z1 = tf.nn.conv2d(X, W1, strides=[1, s, s, 1], padding='SAME')
-    # RELU
-    A1 = tf.nn.relu(Z1)
-    # MAXPOOL: window 8x8, sride 8, padding 'SAME'
-    f, s = 8, 8
-    P1 = tf.nn.max_pool(A1, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+    with tf.name_scope("Block1"):
+        s = 1
+        Z1 = tf.nn.conv2d(X, W1, strides=[1, s, s, 1], padding='SAME')
+        # RELU
+        A1 = tf.nn.relu(Z1)
+        # MAXPOOL: window 8x8, sride 8, padding 'SAME'
+        f, s = 4, 4
+        P1 = tf.nn.max_pool(A1, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+        # Summaries
+        tf.summary.histogram("weights", W1)
+        # tf.summary.histogram("biases", b)
+        tf.summary.histogram("activations", P1)
 
 # 2
     # CONV2D: filters W2, stride 1, padding 'SAME'
-    s = 1
-    Z2 = tf.nn.conv2d(P1, W2, strides=[1, s, s, 1], padding='SAME')
-    # RELU
-    A2 = tf.nn.relu(Z2)
-    # MAXPOOL: window 4x4, stride 4, padding 'SAME'
-    f, s = 4, 4
-    P2 = tf.nn.max_pool(A2, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+    with tf.name_scope("Block2"):
+        s = 1
+        Z2 = tf.nn.conv2d(P1, W2, strides=[1, s, s, 1], padding='SAME')
+        # RELU
+        A2 = tf.nn.relu(Z2)
+        # MAXPOOL: window 4x4, stride 4, padding 'SAME'
+        f, s = 4, 4
+        P2 = tf.nn.max_pool(A2, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+        # Summaries
+        tf.summary.histogram("weights", W2)
+        # tf.summary.histogram("biases", b)
+        tf.summary.histogram("activations", P2)
 
 # 3
     # CONV2D: filters W2, stride 1, padding 'SAME'
-    s = 1
-    Z3 = tf.nn.conv2d(P2, W3, strides=[1, s, s, 1], padding='SAME')
-    # RELU
-    A3 = tf.nn.relu(Z3)
-    # MAXPOOL: window 4x4, stride 4, padding 'SAME'
-    f, s = 4, 4
-    P3 = tf.nn.max_pool(A3, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+    with tf.name_scope("Block3"):
+        s = 1
+        Z3 = tf.nn.conv2d(P2, W3, strides=[1, s, s, 1], padding='SAME')
+        # RELU
+        A3 = tf.nn.relu(Z3)
+        # MAXPOOL: window 4x4, stride 4, padding 'SAME'
+        f, s = 2, 2
+        P3 = tf.nn.max_pool(A3, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+        # Summaries
+        tf.summary.histogram("weights", W3)
+        # tf.summary.histogram("biases", b)
+        tf.summary.histogram("activations", P3)
 
 # 4
     # CONV2D: filters W2, stride 1, padding 'SAME'
-    s = 1
-    Z4 = tf.nn.conv2d(P3, W4, strides=[1, s, s, 1], padding='SAME')
-    # RELU
-    A4 = tf.nn.relu(Z4)
-    # MAXPOOL: window 4x4, stride 4, padding 'SAME'
-    f, s = 4, 4
-    P4 = tf.nn.max_pool(A4, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+    with tf.name_scope("Block4"):
+        s = 1
+        Z4 = tf.nn.conv2d(P3, W4, strides=[1, s, s, 1], padding='SAME')
+        # RELU
+        A4 = tf.nn.relu(Z4)
+        # MAXPOOL: window 4x4, stride 4, padding 'SAME'
+        f, s = 2, 2
+        P4 = tf.nn.max_pool(A4, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+        # Summaries
+        tf.summary.histogram("weights", W4)
+        # tf.summary.histogram("biases", b)
+        tf.summary.histogram("activations", P4)
 
 
     # FLATTEN
-    P4 = tf.contrib.layers.flatten(P4)
-    # FULLY-CONNECTED without non-linear activation function (not not call softmax).
-    # 6 neurons in output layer. Hint: one of the arguments should be "activation_fn=None"
-    num_outputs = 4
-    Z5 = tf.contrib.layers.fully_connected(P4, num_outputs, activation_fn=None)
+    with tf.name_scope("Output"):
+        F1 = tf.contrib.layers.flatten(P4)
+        # FULLY-CONNECTED without non-linear activation function (not not call softmax).
+        # 6 neurons in output layer. Hint: one of the arguments should be "activation_fn=None"
+        num_outputs = output_num
+        Z5 = tf.contrib.layers.fully_connected(F1, num_outputs, activation_fn=None)
+        # Summaries
+        # tf.summary.histogram("weights", W1)
+        # tf.summary.histogram("biases", b)
+        tf.summary.histogram("activations", Z5)
 
     return Z5
 
@@ -130,10 +155,11 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
     Y = tf.placeholder(tf.float32, [None, n_y])
 
     # Initialize parameters
-    W1 = tf.get_variable("W1", [3, 3, 1, 16], initializer=tf.contrib.layers.xavier_initializer())
-    W2 = tf.get_variable("W2", [5, 5, 16, 32], initializer=tf.contrib.layers.xavier_initializer())
-    W3 = tf.get_variable("W3", [3, 3, 32, 64], initializer=tf.contrib.layers.xavier_initializer())
-    W4 = tf.get_variable("W4", [5, 5, 64, 128], initializer=tf.contrib.layers.xavier_initializer())
+    with tf.variable_scope("conv_weights"):
+        W1 = tf.get_variable("W1", [3, 3, 1, 16], initializer=tf.contrib.layers.xavier_initializer())
+        W2 = tf.get_variable("W2", [5, 5, 16, 32], initializer=tf.contrib.layers.xavier_initializer())
+        W3 = tf.get_variable("W3", [3, 3, 32, 64], initializer=tf.contrib.layers.xavier_initializer())
+        W4 = tf.get_variable("W4", [5, 5, 64, 128], initializer=tf.contrib.layers.xavier_initializer())
 
     parameters = {"W1": W1,
                   "W2": W2,
@@ -149,12 +175,16 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
     # Backpropagation: Define the tensorflow optimizer. Use an AdamOptimizer that minimizes the cost.
     optimizer = tf.train.AdamOptimizer(learning_rate).minimize(cost)
 
+    # Accuracy
+    acc = tf.equal(tf.argmax(Z5, 1), tf.argmax(Y, 1))
+    acc = tf.reduce_mean(tf.cast(acc, tf.float32))
+
     # Initialize all the variables globally
     init = tf.global_variables_initializer()
 
     # Allow saving
     saver = tf.train.Saver(max_to_keep=5,
-                           keep_checkpoint_every_n_hours=10000.0)
+                           keep_checkpoint_every_n_hours=.25)
 
     # Start the session to compute the tensorflow graph
     print('Starting TensorFlow session...')
@@ -170,30 +200,57 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
             saver.restore(sess, restore_file)
 
         # Define saving folder
-        folder_name = 'saver_' \
-                      + str(datetime.datetime.now().strftime("%y%m%d_%H%M")) \
+        folder_name = datetime.datetime.now().strftime("%y%m%d_%H%M") \
                       + '_lr' + str(learning_rate) \
                       + '_ep' + str(num_epochs) \
                       + '_mb' + str(minibatch_size)
-        print("Progress will be saved under ./%s/" % folder_name)
+        progress_path = os.path.join('.', 'saver', folder_name)
+        print("Progress will be saved under %s" % progress_path)
+
+        # Tensorboard summaries
+        # op to write logs to Tensorboard
+        logs_path = os.path.join(progress_path, 'summaries')
+        summary_writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
+        # create a summary to see the graph
+        # summary_writer.add_graph(sess.graph) #--> already defined, not necessary.
+        # Create a summary to show input images
+        tf.summary.image('input', X, 1)
+        # Create a summary to monitor cost and accuracy tensors
+        tf.summary.scalar("loss", cost)
+        tf.summary.scalar("accuracy", acc)
+        # Merge all summaries into a single op
+        merged_summary = tf.summary.merge_all()
 
         # Do the training loop
         print("\n --- TRAINING --- ")
+        step = 0
         for epoch in range(num_epochs):
 
             minibatch_cost = 0.
             num_minibatches = int(m / minibatch_size)  # number of minibatches of size minibatch_size in the train set
             seed = seed + 1
             minibatches = random_mini_batches(X_train, Y_train, minibatch_size, seed)
-
+            # mb = 0
+            # firstmini = True
             for minibatch in minibatches:
                 # Select a minibatch
                 (minibatch_X, minibatch_Y) = minibatch
                 # IMPORTANT: The line that runs the graph on a minibatch.
                 # Run the session to execute the optimizer and the cost. feedict should contain a minibatch for (X,Y).
-                _, temp_cost = sess.run([optimizer, cost], {X: minibatch_X, Y: minibatch_Y})
+                # + Run optimization op (backprop), cost op (loss) and summary nodes
+                _, temp_cost, summary = sess.run([optimizer, cost, merged_summary],
+                                                 {X: minibatch_X, Y: minibatch_Y})
 
+                # Compute average loss
                 minibatch_cost += temp_cost / num_minibatches
+
+                # Write logs at every iteration
+                # if firstmini is True:
+                summary_writer.add_summary(summary, step)# * len(minibatches) + mb)
+                    # mb += 1
+                # else:
+                #     firstmini = False
+
 
             # Print the cost every epoch
             if print_cost == True and epoch % 5 == 0:
@@ -202,11 +259,12 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
                 costs.append(minibatch_cost)
 
             # Save the variables to disk every epoch.
-            file_name = "epoch" #+ str(epoch).zfill(4) #+ ".ckpt"
-            save_path = saver.save(sess, folder_name + '/' + file_name, global_step=epoch)
+            # file_name = "epoch" #+ str(epoch).zfill(4) #+ ".ckpt"
+            checkpoint = os.path.join(progress_path, 'epoch')
+            save_path = saver.save(sess, checkpoint, global_step=epoch)
             # saver = tf.train.Saver(var_list=None)
             # saver.save(sess, file)
-            print("Epoch " + str(epoch) + " saved in file: %s" % save_path)
+            # print("Epoch " + str(epoch) + " saved in file: %s" % save_path)
 
         print('\nFINAL COST after %i epochs: ' % num_epochs, costs[-1])
 
@@ -229,6 +287,23 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
         print("Train Accuracy:", train_accuracy)
         print("Test Accuracy:", test_accuracy)
         print("  --- DONE ---  \n")
+
+        print('These the variables used in the network:')
+        print("GLOBAL:")
+        for i in tf.global_variables():
+            print(i)
+        print("TRAINABLE:")
+        for i in tf.trainable_variables():
+            print(i)
+        print("LOCAL:")
+        for i in tf.local_variables():
+            print(i)
+        print("MODEL:")
+        for i in tf.model_variables():
+            print(i)
+
+        # Close the method to save the operations for TensorBoard
+        summary_writer.close()
 
         return train_accuracy, test_accuracy, parameters
 

@@ -9,24 +9,25 @@ import tensorflow as tf
 from tensorflow.python.framework import ops
 
 import time
-# import sys, os
+import sys, os
 
 import simplenet
 
 
 #   #########################################################################
-
+data_path = os.path.join('.', 'datasets', '2classes')
 
 #   START THE CODE    #######################################################
 print('  --- START ---  ')
 
 
 # Load data
-X_train = np.load('./data/X_train.npy')
-Y_train = np.load('./data/Y_train.npy')
+print("Loading data...")
+X_train = np.load(os.path.join(data_path, 'X_train.npy'))
+Y_train = np.load(os.path.join(data_path, 'Y_train.npy'))
 
-X_dev = np.load('./data/X_dev.npy')
-Y_dev = np.load('./data/Y_dev.npy')
+X_dev = np.load(os.path.join(data_path, 'X_dev.npy'))
+Y_dev = np.load(os.path.join(data_path, 'Y_dev.npy'))
 
 print('%i examples loaded in the training set' % X_train.shape[0])
 print('    X_train: ', X_train.shape)

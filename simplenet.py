@@ -51,6 +51,10 @@ def forward_propagation(X, parameters, output_num=2):
         # MAXPOOL: window 8x8, sride 8, padding 'SAME'
         f, s = 4, 4
         P1 = tf.nn.max_pool(A1, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+        # Summaries
+        tf.summary.histogram("weights", W1)
+        # tf.summary.histogram("biases", b)
+        tf.summary.histogram("activations", P1)
 
 # 2
     # CONV2D: filters W2, stride 1, padding 'SAME'
@@ -62,6 +66,10 @@ def forward_propagation(X, parameters, output_num=2):
         # MAXPOOL: window 4x4, stride 4, padding 'SAME'
         f, s = 4, 4
         P2 = tf.nn.max_pool(A2, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+        # Summaries
+        tf.summary.histogram("weights", W2)
+        # tf.summary.histogram("biases", b)
+        tf.summary.histogram("activations", P2)
 
 # 3
     # CONV2D: filters W2, stride 1, padding 'SAME'
@@ -73,6 +81,10 @@ def forward_propagation(X, parameters, output_num=2):
         # MAXPOOL: window 4x4, stride 4, padding 'SAME'
         f, s = 2, 2
         P3 = tf.nn.max_pool(A3, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+        # Summaries
+        tf.summary.histogram("weights", W3)
+        # tf.summary.histogram("biases", b)
+        tf.summary.histogram("activations", P3)
 
 # 4
     # CONV2D: filters W2, stride 1, padding 'SAME'
@@ -84,6 +96,10 @@ def forward_propagation(X, parameters, output_num=2):
         # MAXPOOL: window 4x4, stride 4, padding 'SAME'
         f, s = 2, 2
         P4 = tf.nn.max_pool(A4, ksize=[1, f, f, 1], strides=[1, s, s, 1], padding='SAME')
+        # Summaries
+        tf.summary.histogram("weights", W4)
+        # tf.summary.histogram("biases", b)
+        tf.summary.histogram("activations", P4)
 
 
     # FLATTEN
@@ -93,6 +109,10 @@ def forward_propagation(X, parameters, output_num=2):
         # 6 neurons in output layer. Hint: one of the arguments should be "activation_fn=None"
         num_outputs = output_num
         Z5 = tf.contrib.layers.fully_connected(F1, num_outputs, activation_fn=None)
+        # Summaries
+        # tf.summary.histogram("weights", W1)
+        # tf.summary.histogram("biases", b)
+        tf.summary.histogram("activations", Z5)
 
     return Z5
 
@@ -186,45 +206,49 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
                       + '_mb' + str(minibatch_size)
         print("Progress will be saved under ./saver/%s/" % folder_name)
 
-        # Tensorboard
-        logs_path = './saver/tf_events/'
-        # Create a summary to monitor cost tensor
+        # Tensorboard summaries
+        # op to write logs to Tensorboard
+        logs_path = './saver/' + folder_name + '/summaries/'
+        summary_writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
+        # create a summary to see the graph
+        # summary_writer.add_graph(sess.graph) #--> already defined, not necessary.
+        # Create a summary to show input images
+        tf.summary.image('input', X, 1)
+        # Create a summary to monitor cost and accuracy tensors
         tf.summary.scalar("loss", cost)
-        # Create a summary to monitor accuracy tensor
         tf.summary.scalar("accuracy", acc)
         # Merge all summaries into a single op
-        merged_summary_op = tf.summary.merge_all()
-        # op to write logs to Tensorboard
-        summary_writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
+        merged_summary = tf.summary.merge_all()
 
         # Do the training loop
         print("\n --- TRAINING --- ")
+        step = 0
         for epoch in range(num_epochs):
 
             minibatch_cost = 0.
             num_minibatches = int(m / minibatch_size)  # number of minibatches of size minibatch_size in the train set
             seed = seed + 1
             minibatches = random_mini_batches(X_train, Y_train, minibatch_size, seed)
-            mb = 0
-            firstmini = True
+            # mb = 0
+            # firstmini = True
             for minibatch in minibatches:
                 # Select a minibatch
                 (minibatch_X, minibatch_Y) = minibatch
                 # IMPORTANT: The line that runs the graph on a minibatch.
                 # Run the session to execute the optimizer and the cost. feedict should contain a minibatch for (X,Y).
                 # + Run optimization op (backprop), cost op (loss) and summary nodes
-                _, temp_cost, summary = sess.run([optimizer, cost, merged_summary_op],
+                _, temp_cost, summary = sess.run([optimizer, cost, merged_summary],
                                                  {X: minibatch_X, Y: minibatch_Y})
 
                 # Compute average loss
                 minibatch_cost += temp_cost / num_minibatches
 
                 # Write logs at every iteration
-                if firstmini is True:
-                    summary_writer.add_summary(summary, epoch)# * len(minibatches) + mb)
+                # if firstmini is True:
+                summary_writer.add_summary(summary, step)# * len(minibatches) + mb)
                     # mb += 1
-                else:
-                    firstmini = False
+                # else:
+                #     firstmini = False
 
 
             # Print the cost every epoch

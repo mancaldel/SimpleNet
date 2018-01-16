@@ -200,10 +200,10 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
             saver.restore(sess, restore_file)
 
         # Define saving folder
-        folder_name = os.path.join(datetime.datetime.now().strftime("%y%m%d_%H%M"),
-                                   '_lr' + str(learning_rate),
-                                   '_ep' + str(num_epochs),
-                                   '_mb' + str(minibatch_size))
+        folder_name = datetime.datetime.now().strftime("%y%m%d_%H%M") \
+                      + '_lr' + str(learning_rate) \
+                      + '_ep' + str(num_epochs) \
+                      + '_mb' + str(minibatch_size)
         progress_path = os.path.join('.', 'saver', folder_name)
         print("Progress will be saved under %s" % progress_path)
 

@@ -200,15 +200,16 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
             saver.restore(sess, restore_file)
 
         # Define saving folder
-        folder_name = str(datetime.datetime.now().strftime("%y%m%d_%H%M")) \
-                      + '_lr' + str(learning_rate) \
-                      + '_ep' + str(num_epochs) \
-                      + '_mb' + str(minibatch_size)
-        print("Progress will be saved under ./saver/%s/" % folder_name)
+        folder_name = os.path.join(datetime.datetime.now().strftime("%y%m%d_%H%M"),
+                                   '_lr' + str(learning_rate),
+                                   '_ep' + str(num_epochs),
+                                   '_mb' + str(minibatch_size))
+        progress_path = os.path.join('.', 'saver', folder_name)
+        print("Progress will be saved under %s" % progress_path)
 
         # Tensorboard summaries
         # op to write logs to Tensorboard
-        logs_path = './saver/' + folder_name + '/summaries/'
+        logs_path = os.path.join(progress_path, 'summaries')
         summary_writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
         # create a summary to see the graph
         # summary_writer.add_graph(sess.graph) #--> already defined, not necessary.
@@ -258,8 +259,9 @@ def simple_model(X_train, Y_train, X_test, Y_test, learning_rate=0.009,
                 costs.append(minibatch_cost)
 
             # Save the variables to disk every epoch.
-            file_name = "epoch" #+ str(epoch).zfill(4) #+ ".ckpt"
-            save_path = saver.save(sess, 'saver/' + folder_name + '/' + file_name, global_step=epoch)
+            # file_name = "epoch" #+ str(epoch).zfill(4) #+ ".ckpt"
+            checkpoint = os.path.join(progress_path, 'epoch')
+            save_path = saver.save(sess, checkpoint, global_step=epoch)
             # saver = tf.train.Saver(var_list=None)
             # saver.save(sess, file)
             # print("Epoch " + str(epoch) + " saved in file: %s" % save_path)
